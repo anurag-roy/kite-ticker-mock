@@ -40,20 +40,23 @@ async function handleSession(websocket: WebSocket) {
       default:
         break;
     }
+
+    setInterval(() => {
+      const mapSize = tokenMap.size;
+      if (mapSize > 0) {
+        const buffer = new ArrayBuffer(2 + (2 + LTP_PACKET_SIZE) * mapSize);
+        const dataView = new DataView(buffer);
+        dataView.setInt16(0, mapSize);
+
+        let index = 2;
+        for (const [key, value] of tokenMap) {
+          index = fillLtpTick(dataView, index, key);
+        }
+        console.log('Sending', buffer);
+        websocket.send(buffer);
+      }
+    }, 500);
   });
-
-  setTimeout(() => {
-    const buffer = new ArrayBuffer(2 + (2 + LTP_PACKET_SIZE) * tokenMap.size);
-    const numberOfPackets = new Uint16Array(buffer, 0, 1);
-    numberOfPackets[0] = tokenMap.size;
-
-    let index = 2;
-    for (const [key, value] of tokenMap) {
-      index = fillLtpTick(buffer, index, key);
-    }
-
-    websocket.send(buffer);
-  }, 500);
 
   websocket.addEventListener('close', async (evt) => {
     console.log(evt);
