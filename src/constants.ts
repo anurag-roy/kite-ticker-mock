@@ -5,3 +5,5 @@ export const modeToPacketSizeMap: Record<Mode, number> = {
   quote: 44,
   full: 184,
 };
+
+export const TICK_INTERVAL_IN_MS = 500;

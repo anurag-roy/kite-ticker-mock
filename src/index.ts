@@ -1,4 +1,4 @@
-import { modeToPacketSizeMap } from './constants';
+import { TICK_INTERVAL_IN_MS, modeToPacketSizeMap } from './constants';
 import { Mode, TickerRequest } from './types';
 import { fillTick } from './utils';
 
@@ -58,7 +58,7 @@ async function handleSession(websocket: WebSocket) {
         }
         websocket.send(buffer);
       }
-    }, 5000);
+    }, TICK_INTERVAL_IN_MS);
   });
 
   websocket.addEventListener('close', async (evt) => {
