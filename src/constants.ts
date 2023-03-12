@@ -1,3 +1,7 @@
-export const LTP_PACKET_SIZE = 8;
-export const QUOTE_PACKET_SIZE = 44;
-export const FULL_PACKET_SIZE = 184;
+import { Mode } from './types';
+
+export const modeToPacketSizeMap: Record<Mode, number> = {
+  ltp: 8,
+  quote: 44,
+  full: 184,
+};

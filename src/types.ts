@@ -1,3 +1,5 @@
+export type Mode = 'ltp' | 'quote' | 'full';
+
 type SubscribeRequest = {
   a: 'subscribe';
   v: number[];
@@ -10,7 +12,7 @@ type UnsubscribeRequest = {
 
 type ModeRequest = {
   a: 'mode';
-  v: ['ltp' | 'quote' | 'full', number[]];
+  v: [Mode, number[]];
 };
 
 export type TickerRequest = SubscribeRequest | UnsubscribeRequest | ModeRequest;

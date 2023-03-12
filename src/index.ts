@@ -1,9 +1,9 @@
-import { LTP_PACKET_SIZE } from './constants';
-import { TickerRequest } from './types';
-import { fillLtpTick } from './utils';
+import { modeToPacketSizeMap } from './constants';
+import { Mode, TickerRequest } from './types';
+import { fillTick } from './utils';
 
 async function handleSession(websocket: WebSocket) {
-  const tokenMap = new Map<number, 'ltp' | 'quote' | 'full'>();
+  const tokenMap = new Map<number, Mode>();
 
   websocket.accept();
   websocket.addEventListener('message', async ({ data }) => {
@@ -14,9 +14,7 @@ async function handleSession(websocket: WebSocket) {
       }
       reqBody = JSON.parse(data);
     } catch {
-      websocket.send(
-        JSON.stringify({ error: 'Unknown message received', tz: new Date() })
-      );
+      websocket.send(JSON.stringify({ error: 'Unknown message received' }));
       return;
     }
 
@@ -44,18 +42,23 @@ async function handleSession(websocket: WebSocket) {
     setInterval(() => {
       const mapSize = tokenMap.size;
       if (mapSize > 0) {
-        const buffer = new ArrayBuffer(2 + (2 + LTP_PACKET_SIZE) * mapSize);
+        // Start with 2 bytes which are for total number of packets
+        let bufferSize = 2;
+        for (const mode of tokenMap.values()) {
+          // Add extra 2 bytes which are for packet size
+          bufferSize = bufferSize + 2 + modeToPacketSizeMap[mode];
+        }
+        const buffer = new ArrayBuffer(bufferSize);
         const dataView = new DataView(buffer);
         dataView.setInt16(0, mapSize);
 
         let index = 2;
         for (const [key, value] of tokenMap) {
-          index = fillLtpTick(dataView, index, key);
+          index = fillTick(dataView, index, key, value);
         }
-        console.log('Sending', buffer);
         websocket.send(buffer);
       }
-    }, 500);
+    }, 5000);
   });
 
   websocket.addEventListener('close', async (evt) => {
